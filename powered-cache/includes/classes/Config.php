@@ -522,6 +522,7 @@ class Config {
 		$config_file_string .= '$powered_cache_mobile_prefixes = ' . var_export( mobile_prefixes(), true ) . ';' . PHP_EOL;
 		$config_file_string .= '$powered_cache_rejected_user_agents = ' . var_export( AdvancedCache::get_rejected_user_agents(), true ) . ';' . PHP_EOL;
 		$config_file_string .= '$powered_cache_rejected_cookies = ' . var_export( AdvancedCache::get_rejected_cookies(), true ) . ';' . PHP_EOL;
+		$config_file_string .= '$powered_cache_rejected_referrers = ' . var_export( AdvancedCache::get_rejected_referrers(), true ) . ';' . PHP_EOL;
 		$config_file_string .= '$powered_cache_vary_cookies = ' . var_export( AdvancedCache::get_vary_cookies(), true ) . ';' . PHP_EOL;
 		$config_file_string .= '$powered_cache_rejected_uri = ' . var_export( AdvancedCache::get_rejected_uri(), true ) . ';' . PHP_EOL;
 		$config_file_string .= '$powered_cache_ignored_query_strings = ' . var_export( AdvancedCache::get_ignored_query_strings(), true ) . ';' . PHP_EOL;
@@ -548,6 +549,11 @@ class Config {
 
 		if ( ! file_put_contents( $config_file, $config_file_string ) ) {
 			return false;
+		}
+
+		// OPCache invalidate
+		if ( function_exists( 'opcache_invalidate' ) ) {
+			opcache_invalidate( $config_file, true );
 		}
 
 		return true;
@@ -726,7 +732,11 @@ class Config {
 	public function save_configuration( $settings, $network_wide = false ) {
 
 		if ( can_configure_object_cache() ) {
-			$this->setup_object_cache( $settings['object_cache'] );
+			if ( ! empty( $settings['dev_mode'] ) ) {
+				$this->setup_object_cache(); // dev mode, no object cache
+			} else {
+				$this->setup_object_cache( $settings['object_cache'] );
+			}
 		}
 
 		$this->setup_page_cache( $settings['enable_page_cache'] );

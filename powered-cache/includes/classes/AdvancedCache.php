@@ -260,6 +260,7 @@ class AdvancedCache {
 					'urls' => $urls,
 				]
 			);
+			$deleted_urls = $urls;
 			$this->cache_purger->save()->dispatch();
 		} else {
 			foreach ( $urls as $url ) {
@@ -276,10 +277,11 @@ class AdvancedCache {
 		 *
 		 * @param {int} $post_id The Post ID.
 		 * @param {array} $deleted_urls The list of purged urls with the updated post.
+		 * @param {array} $urls The list of urls that will be purged. @since 3.6
 		 *
 		 * @since 1.0
 		 */
-		do_action( 'powered_cache_advanced_cache_purge_post', $post_id, $deleted_urls );
+		do_action( 'powered_cache_advanced_cache_purge_post', $post_id, $deleted_urls, $urls );
 	}
 
 	/**
@@ -482,6 +484,32 @@ class AdvancedCache {
 		return apply_filters( 'powered_cache_vary_cookies', $cookies );
 	}
 
+	/**
+	 * Get the list of rejected referrers
+	 *
+	 * @return mixed|null
+	 * @since 3.6
+	 */
+	public static function get_rejected_referrers() {
+		$settings           = \PoweredCache\Utils\get_settings();
+		$rejected_referrers = [];
+
+		if ( ! empty( $settings['rejected_referrers'] ) ) {
+			$rejected_referrers = preg_split( '#(\r\n|\r|\n)#', $settings['rejected_referrers'], - 1, PREG_SPLIT_NO_EMPTY );
+		}
+
+		/**
+		 * Filter rejected referrer list.
+		 *
+		 * @hook   powered_cache_rejected_referrers
+		 *
+		 * @param  {array} $rejected_referrers The referrer that will not see the cached page.
+		 *
+		 * @return {array} Rejected referrer list.
+		 * @since  3.6
+		 */
+		return apply_filters( 'powered_cache_rejected_referrers', $rejected_referrers );
+	}
 
 	/**
 	 * Get the list of rejected user agents

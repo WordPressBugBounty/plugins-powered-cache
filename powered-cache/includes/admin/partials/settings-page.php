@@ -409,17 +409,51 @@ $cf_api_token = \PoweredCache\Extensions\Cloudflare\Cloudflare::get_cf_api_token
 						</div>
 					</div>
 
-					<!-- Cookie Vary -->
+					<!-- Rejected Referrers -->
 					<div class="sui-box-settings-row">
 						<div class="sui-box-settings-col-1">
-							<span class="sui-settings-label" id="rejected_cookies_label"><?php esc_html_e( 'Vary Cookies', 'powered-cache' ); ?></span>
+							<span class="sui-settings-label" id="rejected_referrers_label">
+								<?php esc_html_e( 'Rejected Referrers', 'powered-cache' ); ?>
+							</span>
 						</div>
 
 						<div class="sui-box-settings-col-2">
 							<div class="sui-row">
 								<div class="sui-col-md-8">
 									<div class="sui-form-field">
-										<label for="vary_cookies" id="vary_cookies_label" class="sui-label"><i><?php esc_html_e( 'Enter vary cookies (one per line)', 'powered-cache' ); ?></i></label>
+										<label for="rejected_referrers" class="sui-label">
+											<i><?php esc_html_e( 'Enter rejected referrers (one per line)', 'powered-cache' ); ?></i>
+										</label>
+										<textarea
+											placeholder="https://example.com"
+											id="rejected_referrers"
+											name="rejected_referrers"
+											class="sui-form-control"
+											aria-labelledby="rejected_referrers_label"
+											aria-describedby="rejected_referrers_description"
+											rows="5"
+										><?php echo esc_textarea( $settings['rejected_referrers'] ); ?></textarea>
+										<span id="rejected_referrers_description" class="sui-description">
+											<?php esc_html_e( 'Never cache pages that use the specified referrers.', 'powered-cache' ); ?>
+											<a href="<?php echo esc_url( get_doc_url( '/advanced-options/', 'rejected-referrers' ) ); ?>" target="_blank">(?)</a>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Cookie Vary -->
+					<div class="sui-box-settings-row">
+						<div class="sui-box-settings-col-1">
+							<span class="sui-settings-label" id="vary_cookies_label"><?php esc_html_e( 'Vary Cookies', 'powered-cache' ); ?></span>
+						</div>
+
+						<div class="sui-box-settings-col-2">
+							<div class="sui-row">
+								<div class="sui-col-md-8">
+									<div class="sui-form-field">
+										<label for="vary_cookies" class="sui-label"><i><?php esc_html_e( 'Enter vary cookies (one per line)', 'powered-cache' ); ?></i></label>
 										<textarea
 												placeholder="(Eg: cookie_notice_accepted)"
 												id="vary_cookies"
@@ -1664,23 +1698,23 @@ js-(before|after|extra)</pre>
 						</div>
 
 					</div>
-
-					<?php
-					if ( CachePreloader::factory()->is_process_running() ) {
+					<?php if ( $settings['enable_cache_preload'] ) : ?>
+						<?php
 						$batch          = CachePreloader::factory()->get_batches( 1 );
 						$remaining_item = ! empty( $batch[0] ) && $batch[0]->data ? count( $batch[0]->data ) : 0;
-					}
-					?>
-
-					<?php if ( isset( $remaining_item ) ) : ?>
-						<div class="sui-notice sui-notice-warning" style="padding:10px 20px;margin-bottom:0;">
-							<div class="sui-notice-content">
-								<div class="sui-notice-message">
-									<span class="sui-notice-icon sui-icon-info sui-md" aria-hidden="true"></span>
-									<p><?php echo esc_html( sprintf( __( 'Preloader is currently running. Remaining items: %d (Refresh to see progress)', 'powered-cache' ), $remaining_item ) ); ?></p>
+						?>
+						<?php if ( ! empty( $remaining_item ) ) : ?>
+							<div class="sui-notice sui-notice-warning" style="padding:10px 20px;margin-bottom:0;">
+								<div class="sui-notice-content">
+									<div class="sui-notice-message">
+										<span class="sui-notice-icon sui-icon-info sui-md" aria-hidden="true"></span>
+										<p>
+											<?php echo esc_html( sprintf( __( 'Preloader is currently running. Remaining items: %d (Refresh to see progress)', 'powered-cache' ), $remaining_item ) ); ?>
+										</p>
+									</div>
 								</div>
 							</div>
-						</div>
+						<?php endif; ?>
 					<?php endif; ?>
 
 					<div class="sui-box-settings-row">
@@ -2777,6 +2811,46 @@ js-(before|after|extra)</pre>
 							</div>
 						</div>
 					</div>
+
+					<!-- Developer Mode Toggle -->
+					<div class="sui-box-settings-row">
+						<div class="sui-box-settings-col-1">
+							<span class="sui-settings-label"><?php esc_html_e( 'Development Mode', 'powered-cache' ); ?></span>
+							<span class="sui-description"><?php esc_html_e( 'Temporarily disables caching and optimizations. Useful while making changes to your site.', 'powered-cache' ); ?></span>
+						</div>
+
+						<div class="sui-box-settings-col-2">
+							<div class="sui-form-field">
+								<?php if ( \PoweredCache\Utils\is_dev_mode_active() ) : ?>
+									<button
+										type="submit"
+										name="powered_cache_form_action"
+										value="disable_dev_mode"
+										class="sui-button sui-button-ghost sui-button-green"
+									>
+										<?php esc_html_e( 'Disable Dev Mode', 'powered-cache' ); ?>
+									</button>
+									<p class="sui-description">
+										<?php esc_html_e( 'Development mode is currently active. Caching and optimizations are disabled until turned off.', 'powered-cache' ); ?>
+									</p>
+								<?php else : ?>
+									<button
+										type="submit"
+										name="powered_cache_form_action"
+										value="enable_dev_mode"
+										class="sui-button sui-button-ghost sui-button-red"
+									>
+										<?php esc_html_e( 'Enable Dev Mode', 'powered-cache' ); ?>
+									</button>
+									<p class="sui-description">
+										<?php esc_html_e( 'Temporarily disables caching and optimizations. Useful while making changes to your site.', 'powered-cache' ); ?>
+									</p>
+								<?php endif; ?>
+
+							</div>
+						</div>
+					</div>
+
 
 					<div class="sui-box-settings-row">
 						<div class="sui-box-settings-col-1">

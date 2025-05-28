@@ -47,6 +47,12 @@ if ( ! $GLOBALS['powered_cache_options']['enable_page_cache'] ) {
 	return;
 }
 
+if ( ! empty( $GLOBALS['powered_cache_options']['dev_mode'] ) ) {
+	powered_cache_add_cache_miss_header( "Dev mode is enabled" );
+
+	return;
+}
+
 if ( isset( $_GET['nopoweredcache'] ) && $_GET['nopoweredcache'] ) {
 	powered_cache_add_cache_miss_header( "Passing nopoweredcache with the query" );
 
@@ -77,6 +83,32 @@ if ( empty( $GLOBALS['powered_cache_options']['cache_mobile'] ) ) {
 	}
 }
 
+// Exclude caching based on HTTP_REFERER
+if ( ! empty( $powered_cache_rejected_referrers ) && isset( $_SERVER['HTTP_REFERER'] ) && $_SERVER['HTTP_REFERER'] ) {
+	foreach ( $powered_cache_rejected_referrers as $referrer_rule ) {
+		$referrer_rule = trim( $referrer_rule );
+		if ( $referrer_rule === '' ) {
+			continue;
+		}
+		// If rule starts with ^ or contains regex special chars, treat as regex
+		if ( preg_match( '/[\\^$.|?*+()\[\]]/', $referrer_rule ) ) {
+			if ( @preg_match( '#' . $referrer_rule . '#i', $_SERVER['HTTP_REFERER'] ) ) {
+				if ( preg_match( '#' . $referrer_rule . '#i', $_SERVER['HTTP_REFERER'] ) ) {
+					powered_cache_add_cache_miss_header( "Rejected referer: $referrer_rule" );
+
+					return;
+				}
+			}
+		} else {
+			// Plain string match
+			if ( strpos( $_SERVER['HTTP_REFERER'], $referrer_rule ) !== false ) {
+				powered_cache_add_cache_miss_header( "Rejected referer: $referrer_rule" );
+
+				return;
+			}
+		}
+	}
+}
 
 if ( ! empty( $_COOKIE ) ) {
 	$wp_cookies      = [ 'wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_' ];
@@ -194,6 +226,12 @@ function powered_cache_page_buffer( $buffer, $flags ) {
 	if ( defined( 'DONOTCACHEPAGE' ) && DONOTCACHEPAGE ) {
 		\PoweredCache\Utils\log( sprintf( 'DONOTCACHEPAGE DEFINED on %s', $_SERVER['REQUEST_URI'] ) );
 		powered_cache_add_cache_miss_header( "DONOTCACHEPAGE defined" );
+
+		return $buffer;
+	}
+
+	if ( ! empty( $GLOBALS['powered_cache_options']['dev_mode'] ) ) {
+		powered_cache_add_cache_miss_header( "Dev mode is enabled" );
 
 		return $buffer;
 	}

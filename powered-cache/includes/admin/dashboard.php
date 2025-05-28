@@ -13,6 +13,7 @@ use PoweredCache\Async\DatabaseOptimizer;
 use PoweredCache\Config;
 use PoweredCache\Encryption;
 use PoweredCache\Preloader;
+use function PoweredCache\Utils\is_dev_mode_active;
 use function PoweredCache\Utils\mask_string;
 use const PoweredCache\Constants\ALLOPTIONS_CRITICAL_THRESHOLD;
 use const PoweredCache\Constants\ALLOPTIONS_WARNING_THRESHOLD;
@@ -199,6 +200,12 @@ function process_form_submit() {
 					$options         = sanitize_options( $import_settings );
 				}
 				break;
+			case 'enable_dev_mode':
+				$options['dev_mode'] = true;
+				break;
+			case 'disable_dev_mode':
+				$options['dev_mode'] = false;
+				break;
 			case 'save_settings_and_optimize':
 				db_optimize( $options );
 				break;
@@ -220,6 +227,11 @@ function process_form_submit() {
 
 		// drop object cache on backend changes
 		if ( isset( $options['object_cache'] ) && $old_options['object_cache'] !== $options['object_cache'] ) {
+			wp_cache_flush();
+		}
+
+		// Flush cache when Dev Mode is turned OFF
+		if ( ! empty( $old_options['dev_mode'] ) && empty( $options['dev_mode'] ) ) {
 			wp_cache_flush();
 		}
 
@@ -309,6 +321,7 @@ function sanitize_options( $options ) {
 	$sanitized_options['rewrite_file_optimizer']           = ! empty( $options['rewrite_file_optimizer'] );
 	$sanitized_options['rejected_user_agents']             = sanitize_textarea_field( $options['rejected_user_agents'] );
 	$sanitized_options['rejected_cookies']                 = sanitize_textarea_field( $options['rejected_cookies'] );
+	$sanitized_options['rejected_referrers']               = sanitize_textarea_field( $options['rejected_referrers'] );
 	$sanitized_options['vary_cookies']                     = sanitize_textarea_field( $options['vary_cookies'] );
 	$sanitized_options['rejected_uri']                     = sanitize_textarea_field( $options['rejected_uri'] );
 	$sanitized_options['cache_query_strings']              = sanitize_textarea_field( $options['cache_query_strings'] );
@@ -436,6 +449,7 @@ function sanitize_options( $options ) {
 	$sanitized_options['varnish_ip']                     = sanitize_text_field( $options['varnish_ip'] );
 	$sanitized_options['cache_footprint']                = ! empty( $options['cache_footprint'] );
 	$sanitized_options['async_cache_cleaning']           = ! empty( $options['async_cache_cleaning'] );
+	$sanitized_options['dev_mode']                       = ! empty( $options['dev_mode'] );
 	$sanitized_options['enable_google_tracking']         = ! empty( $options['enable_google_tracking'] );
 	$sanitized_options['enable_fb_tracking']             = ! empty( $options['enable_fb_tracking'] );
 
@@ -733,6 +747,7 @@ function cancel_preloading() {
 	\PoweredCache\Utils\log( 'Cancel preload process - Settings toggle' );
 	$cache_preloader = CachePreloader::factory();
 	$cache_preloader->cancel_process();
+	$cache_preloader->delete_all();
 }
 
 /**
@@ -743,6 +758,8 @@ function cancel_preloading() {
 function start_preloading() {
 	\PoweredCache\Utils\log( 'Enable Preloader - Settings toggle' );
 	Preloader::factory()->setup_preload_queue();
+	// kickstart the preloading process
+	Preloader::factory()->dispatch_preload_queue();
 }
 
 /**

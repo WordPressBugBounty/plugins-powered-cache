@@ -60,6 +60,7 @@ function get_settings( $force_network_wide = false ) {
 		'auto_configure_htaccess'          => $is_apache,
 		'rejected_user_agents'             => '',
 		'rejected_cookies'                 => '',
+		'rejected_referrers'               => '',
 		'vary_cookies'                     => '',
 		'rejected_uri'                     => '',
 		'ignored_query_strings'            => '',
@@ -156,6 +157,7 @@ function get_settings( $force_network_wide = false ) {
 		// misc
 		'cache_footprint'                  => true,
 		'async_cache_cleaning'             => false,
+		'dev_mode'                         => false,
 		// new options needs to migrate from extensions
 		'enable_google_tracking'           => false,
 		'enable_fb_tracking'               => false,
@@ -1086,12 +1088,12 @@ function log( $message ) {
 	 *
 	 * @hook   powered_cache_log_message_type
 	 *
-	 * @param  {null|int} null default message type
+	 * @param  {int} 0 default message type since 3.6
 	 *
-	 * @return {null|int} New value.
+	 * @return {int} New value.
 	 * @since  2.0
 	 */
-	$message_type = apply_filters( 'powered_cache_log_message_type', null );
+	$message_type = apply_filters( 'powered_cache_log_message_type', 0 );
 	$destination  = null;
 
 	if ( defined( 'POWERED_CACHE_LOG_FILE' ) ) {
@@ -1115,6 +1117,8 @@ function log( $message ) {
 	if ( defined( 'POWERED_CACHE_LOG_IP' ) && POWERED_CACHE_LOG_IP !== get_client_ip() ) {
 		return false;
 	}
+
+	$message_type = absint( $message_type );
 
 	return error_log( $log_message, $message_type, $log_destination ); // phpcs:ignore
 }
@@ -1567,4 +1571,22 @@ function is_ip_in_range( $ip, $range ) {
 	$mask_decimal   = - 1 << ( 32 - $bits );
 
 	return ( $subnet_decimal & $mask_decimal ) === ( $ip_decimal & $mask_decimal );
+}
+
+/**
+ * Check if the dev mode is active
+ *
+ * @return bool
+ * @since 3.6
+ */
+function is_dev_mode_active() {
+	// Check global config first (fast)
+	if ( ! empty( $GLOBALS['powered_cache_options']['dev_mode'] ) ) {
+		return true;
+	}
+
+	// Fallback to database option
+	$settings = \PoweredCache\Utils\get_settings();
+
+	return ! empty( $settings['dev_mode'] );
 }

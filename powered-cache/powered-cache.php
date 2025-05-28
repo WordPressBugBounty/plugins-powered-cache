@@ -3,9 +3,9 @@
  * Plugin Name:       Powered Cache
  * Plugin URI:        https://poweredcache.com
  * Description:       Powered Cache is the most powerful caching and performance suite for WordPress, designed to easily improve your PageSpeed and Web Vitals Score.
- * Version:           3.5.4
+ * Version:           3.6
  * Requires at least: 5.7
- * Requires PHP:      7.2.5
+ * Requires PHP:      7.4
  * Author:            Powered Cache
  * Author URI:        https://poweredcache.com
  * License:           GPL v2 or later
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Useful global constants.
-define( 'POWERED_CACHE_VERSION', '3.5.4' );
+define( 'POWERED_CACHE_VERSION', '3.6' );
 define( 'POWERED_CACHE_DB_VERSION', '3.4' );
 define( 'POWERED_CACHE_PLUGIN_FILE', __FILE__ );
 define( 'POWERED_CACHE_URL', plugin_dir_url( __FILE__ ) );
@@ -94,6 +94,22 @@ require_once POWERED_CACHE_COMPAT_DIR . 'loader.php';
 $network_activated = Utils\is_network_wide( POWERED_CACHE_PLUGIN_FILE );
 if ( ! defined( 'POWERED_CACHE_IS_NETWORK' ) ) {
 	define( 'POWERED_CACHE_IS_NETWORK', $network_activated );
+}
+
+if ( Utils\is_dev_mode_active() ) {
+	DevMode::setup();
+
+	$frontend_request = ! (
+		( function_exists( 'is_admin' ) && is_admin() )
+		|| ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+		|| ( defined( 'DOING_CRON' ) && DOING_CRON )
+		|| ( defined( 'WP_CLI' ) && WP_CLI )
+	);
+
+	// don't run the plugin for frontend requests in dev mode
+	if ( $frontend_request ) {
+		return;
+	}
 }
 
 if ( Utils\bypass_request() ) {
