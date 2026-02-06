@@ -113,7 +113,7 @@ class Config {
 		$string  = '<?php ' . "\n";
 		$string .= "defined( 'ABSPATH' ) || exit;" . PHP_EOL;
 		$string .= "define( 'POWERED_OBJECT_CACHE', true );" . PHP_EOL;
-		$string .= "if ( ! defined( 'WP_CACHE_KEY_SALT' ) ) {" . PHP_EOL;
+		$string .= "if ( ! defined( 'WP_CACHE_KEY_SALT' ) && defined( 'DB_NAME') ) {" . PHP_EOL;
 		$string .= "\t" . "define( 'WP_CACHE_KEY_SALT', DB_NAME );" . PHP_EOL;
 		$string .= '}' . PHP_EOL;
 
@@ -125,7 +125,7 @@ class Config {
 		$string .= "\t" . 'include( \'' . $object_caches[ $backend ] . '\' );' . PHP_EOL;
 		$string .= '} else {' . PHP_EOL;
 		$string .= "\t" . 'define( \'POWERED_OBJECT_CACHE_HAS_PROBLEM\', true );' . PHP_EOL;
-		$string .= '}';
+		$string .= '}' . PHP_EOL;
 
 		/**
 		 * Filters object-cache.php file contents.

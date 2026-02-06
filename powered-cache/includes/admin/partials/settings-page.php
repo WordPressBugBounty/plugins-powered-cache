@@ -731,7 +731,7 @@ $cf_api_token = \PoweredCache\Extensions\Cloudflare\Cloudflare::get_cf_api_token
 										<?php checked( 1, $settings['minify_css'] ); ?>
 									>
 									<span class="sui-toggle-slider" aria-hidden="true"></span>
-									<span id="minify_css_label" class="sui-toggle-label"><?php esc_html_e( 'Minify CSS' ); ?></span>
+									<span id="minify_css_label" class="sui-toggle-label"><?php esc_html_e( 'Minify CSS', 'powered-cache' ); ?></span>
 									<span id="minify_css_description" class="sui-description"><?php esc_html_e( 'Minify CSS files', 'powered-cache' ); ?></span>
 								</label>
 							</div>
@@ -747,7 +747,7 @@ $cf_api_token = \PoweredCache\Extensions\Cloudflare\Cloudflare::get_cf_api_token
 										<?php checked( 1, $settings['combine_css'] ); ?>
 									>
 									<span class="sui-toggle-slider" aria-hidden="true"></span>
-									<span id="combine_css_label" class="sui-toggle-label"><?php esc_html_e( 'Combine CSS files' ); ?></span>
+									<span id="combine_css_label" class="sui-toggle-label"><?php esc_html_e( 'Combine CSS files', 'powered-cache' ); ?></span>
 									<span id="combine_css_description" class="sui-description"><?php esc_html_e( 'Combine CSS files to reduce HTTP requests', 'powered-cache' ); ?></span>
 								</label>
 							</div>
@@ -799,7 +799,7 @@ $cf_api_token = \PoweredCache\Extensions\Cloudflare\Cloudflare::get_cf_api_token
 										<?php checked( 1, $settings['critical_css'] ); ?>
 									>
 									<span class="sui-toggle-slider" aria-hidden="true"></span>
-									<span id="critical_css_label" class="sui-toggle-label"><?php esc_html_e( ' Critical CSS' ); ?></span>
+									<span id="critical_css_label" class="sui-toggle-label"><?php esc_html_e( ' Critical CSS', 'powered-cache' ); ?></span>
 									<span id="critical_css_description" class="sui-description"><?php esc_html_e( 'Critical CSS is a technique that extracts the CSS above the fold to display the page as quickly as possible.', 'powered-cache' ); ?></span>
 								</label>
 							</div>
@@ -904,7 +904,7 @@ $cf_api_token = \PoweredCache\Extensions\Cloudflare\Cloudflare::get_cf_api_token
 										<?php checked( 1, $settings['remove_unused_css'] ); ?>
 									>
 									<span class="sui-toggle-slider" aria-hidden="true"></span>
-									<span id="remove_unused_css_label" class="sui-toggle-label"><?php esc_html_e( 'Remove Unused CSS' ); ?></span>
+									<span id="remove_unused_css_label" class="sui-toggle-label"><?php esc_html_e( 'Remove Unused CSS', 'powered-cache' ); ?></span>
 									<span id="remove_unused_css_description" class="sui-description"><?php esc_html_e( 'It reduces page size by removing all CSS and stylesheets that are not used while keeping only the used CSS.', 'powered-cache' ); ?></span>
 								</label>
 							</div>
@@ -1946,6 +1946,45 @@ js-(before|after|extra)</pre>
 
 
 					</div>
+
+					<div class="sui-box-settings-row <?php echo( ! is_premium() ? 'sui-disabled' : '' ); ?>">
+						<div class="sui-box-settings-col-1">
+							<span class="sui-settings-label"><?php esc_html_e( 'LCP Optimization', 'powered-cache' ); ?>
+								<?php if ( ! is_premium() ) : ?>
+									<span class="sui-tag sui-tag-pro"><?php esc_html_e( 'Premium', 'powered-cache' ); ?></span>
+								<?php endif; ?>
+							</span>
+							<span class="sui-description"></span>
+						</div>
+
+						<div class="sui-box-settings-col-2">
+							<div class="sui-form-field">
+								<label for="enable_lcp_optimization" class="sui-toggle">
+									<input
+										type="checkbox"
+										id="enable_lcp_optimization"
+										name="enable_lcp_optimization"
+										value="1"
+										aria-labelledby="enable_lcp_optimization_label"
+										aria-describedby="enable_lcp_optimization_description"
+										<?php checked( $settings['enable_lcp_optimization'], 1 ); ?>
+									>
+									<span class="sui-toggle-slider" aria-hidden="true"></span>
+									<span id="enable_lcp_optimization_label" class="sui-toggle-label">
+										<?php esc_html_e( 'Enable Automatic LCP Optimization', 'powered-cache' ); ?>
+									</span>
+									<span id="enable_lcp_optimization_description" class="sui-description">
+										<?php esc_html_e( 'Automatically detect and preload the Largest Contentful Paint (LCP) image to improve page loading experience.', 'powered-cache' ); ?>
+										<a href="<?php echo esc_url( get_doc_url( '/lcp-optimization/' ) ); ?>" target="_blank" rel="noopener noreferrer">
+											<?php esc_html_e( 'Learn more', 'powered-cache' ); ?>
+										</a>
+									</span>
+								</label>
+							</div>
+						</div>
+
+					</div>
+
 
 					<div class="sui-box-settings-row <?php echo( ! is_premium() ? 'sui-disabled' : '' ); ?>">
 						<div class="sui-box-settings-col-1">
